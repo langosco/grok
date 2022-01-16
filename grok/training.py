@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import wandb
+from pytorch_lightning.loggers import WandbLogger
+
 import argparse
 import copy
 import json
@@ -579,13 +582,13 @@ class TrainableTransformer(LightningModule):
                 "val_accuracy": accuracy,
                 "val_perplexity": perplexity,
             }
-            for name, param in self.named_parameters():
-                # n parameters
-                n_params = param.numel()
-                # get the l2 norm of the parameter
-                logs["paramnorm_" + name] = torch.norm(
-                    param, 2
-                ).detach().cpu().numpy() / np.sqrt(n_params)
+            #for name, param in self.named_parameters():
+            #    # n parameters
+            #    n_params = param.numel()
+            #    # get the l2 norm of the parameter
+            #    logs["paramnorm_" + name] = torch.norm(
+            #        param, 2
+            #    ).detach().cpu().numpy() / np.sqrt(n_params)
 
             # train accuracy
             device = self.transformer.embedding.weight.device
@@ -705,6 +708,7 @@ def train(hparams: Namespace) -> None:
     torch.save(model, os.path.join(checkpoint_path, "init.pt"))
 
     logger = CSVLogger(hparams.logdir)
+    wandb_logger = WandbLogger(project="grok-original-repo")
 
     # checkpointer = ModelCheckpoint(
     #     filepath=checkpoint_path,
@@ -721,7 +725,7 @@ def train(hparams: Namespace) -> None:
         "val_check_interval": 1,
         "profiler": False,
         # "checkpoint_callback": checkpointer,
-        "logger": logger,
+        "logger": [logger, wandb_logger],
         "log_every_n_steps": 1,
         "flush_logs_every_n_steps": 1000,
     }
