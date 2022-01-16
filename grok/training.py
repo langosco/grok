@@ -51,6 +51,7 @@ class TrainableTransformer(LightningModule):
         """
         super().__init__()
         self.hparams.update(vars(hparams))  # type: ignore
+        self.save_hyperparameters()
         self.prepare_data()
 
         self.transformer = Transformer(
@@ -708,7 +709,7 @@ def train(hparams: Namespace) -> None:
     torch.save(model, os.path.join(checkpoint_path, "init.pt"))
 
     logger = CSVLogger(hparams.logdir)
-    wandb_logger = WandbLogger(project="grok-original-repo")
+    wandb_logger = WandbLogger(project="local-grok-original-repo")
 
     # checkpointer = ModelCheckpoint(
     #     filepath=checkpoint_path,
